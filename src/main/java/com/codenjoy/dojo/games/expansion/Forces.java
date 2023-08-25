@@ -23,15 +23,20 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
+import static com.codenjoy.dojo.services.PointImpl.pt;
+
 import com.codenjoy.dojo.client.Utils;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.PointImpl;
+import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.json.JSONObject;
 
-import static com.codenjoy.dojo.services.PointImpl.pt;
-
+@Setter
+@EqualsAndHashCode
 public class Forces {
 
+    @EqualsAndHashCode.Exclude
     private int count;
     private Point region;
 

@@ -23,11 +23,10 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
-import com.codenjoy.dojo.services.Dice;
-import com.codenjoy.dojo.services.QDirection;
-
 import static com.codenjoy.dojo.games.expansion.Command.doNothing;
-import static com.codenjoy.dojo.services.PointImpl.pt;
+
+import com.codenjoy.dojo.games.expansion.component.GreyGoo;
+import com.codenjoy.dojo.services.Dice;
 
 /**
  * Author: your name
@@ -37,16 +36,22 @@ import static com.codenjoy.dojo.services.PointImpl.pt;
  * Pay attention to {@link YourSolverTest} - there is
  * a test framework for you.
  */
+
 public class YourSolver extends AbstractSolver {
 
     private Dice dice;
 
     public YourSolver(Dice dice) {
         this.dice = dice;
+        greyGoo = new GreyGoo();
     }
 
     public YourSolver() {
+        greyGoo = new GreyGoo();
     }
+
+    private GreyGoo greyGoo;
+    private int lastTick = 0;
 
     /**
      * @param board use it for find elements on board
@@ -54,14 +59,19 @@ public class YourSolver extends AbstractSolver {
      */
     @Override
     public Command whatToDo(Board board) {
-        if (board.isGameOver()) return doNothing();
+        if (board.isGameOver() || board.isInLobby()) return doNothing();
+        if(lastTick > board.getTick()) {
+            greyGoo.reset();
+        }
+        lastTick = board.getTick();
 
-        // TODO your code here
-
-        return Command
-                .increase(new Forces(pt(12, 13), 10))
-                .move(new ForcesMoves(pt(14, 15), 5, QDirection.DOWN))
-                .build();
+        try {
+            return greyGoo.process(board);
+        } catch (Exception e) {
+            System.out.println("MAIN ERROR");
+            e.printStackTrace();
+            return Command.doNothing();
+        }
     }
 
     @Override

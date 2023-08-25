@@ -23,12 +23,12 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Command {
 
@@ -74,6 +74,15 @@ public class Command {
         return new CommandBuilder().move(forces);
     }
 
+    public static CommandBuilder increase(Collection<Forces> forces) {
+        return new CommandBuilder().increase(forces);
+    }
+
+    public static CommandBuilder move(Collection<ForcesMoves> forces) {
+        return new CommandBuilder().move(forces);
+    }
+
+
     public static class CommandBuilder {
         private List<ForcesMoves> movements;
         private List<Forces> increase;
@@ -90,6 +99,16 @@ public class Command {
 
         public CommandBuilder move(ForcesMoves... forces) {
             movements.addAll(Arrays.asList(forces));
+            return this;
+        }
+
+        public CommandBuilder increase(Collection<Forces> forces) {
+            increase.addAll(forces);
+            return this;
+        }
+
+        public CommandBuilder move(Collection<ForcesMoves> forces) {
+            movements.addAll(forces);
             return this;
         }
 

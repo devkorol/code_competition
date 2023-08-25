@@ -23,11 +23,11 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
+import static org.junit.Assert.assertEquals;
+
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class BoardTest {
 
@@ -230,8 +230,8 @@ public class BoardTest {
 
         assertEquals(false, board.isBarrierAt(2, 2)); //there is my forces
 
-        assertEquals(false, board.isBarrierAt(1, 1)); // hole
-        assertEquals(false, board.isBarrierAt(9, 3)); // hole
+        assertEquals(true, board.isBarrierAt(1, 1)); // hole
+        assertEquals(true, board.isBarrierAt(9, 3)); // hole
         assertEquals(false, board.isBarrierAt(9, 9));
 
         assertEquals(false, board.isBarrierAt(1, 9));

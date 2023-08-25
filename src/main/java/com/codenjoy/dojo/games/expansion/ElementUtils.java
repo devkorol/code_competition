@@ -22,12 +22,40 @@ package com.codenjoy.dojo.games.expansion;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.LinkedList;
-
 import static com.codenjoy.dojo.client.AbstractLayeredBoard.Layers.LAYER1;
 import static com.codenjoy.dojo.client.AbstractLayeredBoard.Layers.LAYER2;
-import static com.codenjoy.dojo.games.expansion.Element.*;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_BACK_LEFT;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_BACK_RIGHT;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_IN_LEFT;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_IN_RIGHT;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_OUT_LEFT;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_OUT_RIGHT;
+import static com.codenjoy.dojo.games.expansion.Element.BACKGROUND;
+import static com.codenjoy.dojo.games.expansion.Element.BASE1;
+import static com.codenjoy.dojo.games.expansion.Element.BASE2;
+import static com.codenjoy.dojo.games.expansion.Element.BASE3;
+import static com.codenjoy.dojo.games.expansion.Element.BASE4;
+import static com.codenjoy.dojo.games.expansion.Element.BREAK;
+import static com.codenjoy.dojo.games.expansion.Element.EMPTY;
+import static com.codenjoy.dojo.games.expansion.Element.EXIT;
+import static com.codenjoy.dojo.games.expansion.Element.FLOOR;
+import static com.codenjoy.dojo.games.expansion.Element.FOG;
+import static com.codenjoy.dojo.games.expansion.Element.FORCE1;
+import static com.codenjoy.dojo.games.expansion.Element.FORCE2;
+import static com.codenjoy.dojo.games.expansion.Element.FORCE3;
+import static com.codenjoy.dojo.games.expansion.Element.FORCE4;
+import static com.codenjoy.dojo.games.expansion.Element.GOLD;
+import static com.codenjoy.dojo.games.expansion.Element.HOLE;
+import static com.codenjoy.dojo.games.expansion.Element.SPACE;
+import static com.codenjoy.dojo.games.expansion.Element.WALL_BACK;
+import static com.codenjoy.dojo.games.expansion.Element.WALL_BACK_ANGLE_LEFT;
+import static com.codenjoy.dojo.games.expansion.Element.WALL_BACK_ANGLE_RIGHT;
+import static com.codenjoy.dojo.games.expansion.Element.WALL_FRONT;
+import static com.codenjoy.dojo.games.expansion.Element.WALL_LEFT;
+import static com.codenjoy.dojo.games.expansion.Element.WALL_RIGHT;
+
+import java.util.Arrays;
+import java.util.LinkedList;
 
 public class ElementUtils {
 
@@ -89,6 +117,7 @@ public class ElementUtils {
     public static final Element[] barriers = new LinkedList<Element>() {{
         addAll(Arrays.asList(walls));
         addAll(Arrays.asList(SPACE, BREAK, SPACE));
+        addAll(Arrays.asList(HOLE));
     }}.toArray(Element[]::new);
 
     public static int index(Element baseColor) {

@@ -23,20 +23,22 @@ package com.codenjoy.dojo.services;
  */
 
 
-import com.codenjoy.dojo.services.dice.RandomDice;
-import org.apache.commons.lang3.StringUtils;
+import static com.codenjoy.dojo.services.PointImpl.pt;
 
+import com.codenjoy.dojo.services.dice.RandomDice;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.codenjoy.dojo.services.PointImpl.pt;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Реализует возможные направления движения чего либо
  */
 public enum Direction {
 
-    LEFT(0, -1, 0), RIGHT(1, 1, 0), UP(2, 0, 1), DOWN(3, 0, -1),
+    LEFT(0, -1, 0),
+    RIGHT(1, 1, 0),
+    UP(2, 0, 1),
+    DOWN(3, 0, -1),
     ACT(4, 0, 0), STOP(5, 0, 0);
 
     private static final List<Direction> values = Arrays.asList(LEFT, RIGHT, UP, DOWN);
