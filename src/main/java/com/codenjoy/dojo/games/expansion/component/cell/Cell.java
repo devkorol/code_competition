@@ -1,6 +1,8 @@
 package com.codenjoy.dojo.games.expansion.component.cell;
 
 
+import static com.codenjoy.dojo.games.expansion.Forces.ForceType.AIMLESS;
+import static com.codenjoy.dojo.games.expansion.Forces.ForceType.MEMBRANE;
 import static com.codenjoy.dojo.games.expansion.component.GreyGoo.HISTORY_CELL_SIZE;
 
 import com.codenjoy.dojo.games.expansion.Board;
@@ -24,21 +26,30 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 
 @Getter
-public class Cell {
+public abstract class Cell {
+
+  protected final Set<Forces> cellForces = new HashSet<>(500);
+
+  protected final CircularFifoQueue<HashSet<Forces>> lostForcesHistory = new CircularFifoQueue(
+      HISTORY_CELL_SIZE);
+  protected final CircularFifoQueue<HashSet<Forces>> newForcesHistory = new CircularFifoQueue(
+      HISTORY_CELL_SIZE);
+
+  @Deprecated
   private final Membrane membrane;
+  @Deprecated
   private final List<Cores> cores = new ArrayList<>();
-  private final Set<Forces> cellForces = new HashSet<>(500);
 
-  private final CircularFifoQueue<HashSet<Forces>> lostForcesHistory = new CircularFifoQueue(
-      HISTORY_CELL_SIZE);
-  private final CircularFifoQueue<HashSet<Forces>> newForcesHistory = new CircularFifoQueue(
-      HISTORY_CELL_SIZE);
-
+  @Deprecated
   private Map<Cell, Integer> cellSameForcesCount = new HashMap<>();
 
   public Cell(Forces force) {
     membrane = new Membrane();
     cellForces.add(force);
+  }
+
+  public boolean isKnown(Forces force) {
+    return cellForces.contains(force);
   }
 
   public Cell refreshPoints(List<Forces> myForces){
@@ -54,7 +65,10 @@ public class Cell {
               .findFirst();
 
       if(boardForce.isPresent()) {
-        cellForce.setCount(boardForce.get().getCount());
+        cellForce
+            //TODO im sure to lost history???
+            .setType(AIMLESS)
+            .setCount(boardForce.get().getCount());
       } else {
         lostForces.add(cellForce);
         iterator.remove();
@@ -63,7 +77,7 @@ public class Cell {
     return this;
   }
 
-  public Cell expandToAdjacent(Board board, List<Forces> myForces, List<Cell> other) {
+  public Cell roundRobinCollectCellPoints(Board board, List<Forces> myForces, List<Cell> other) {
     HashSet<Forces> newForces = new HashSet<>();
     newForcesHistory.add(newForces);
 
@@ -86,6 +100,14 @@ public class Cell {
           continue;
         }
 
+        //not mine forces so add?
+        if(!board.isBarrierAt(lookPoint)) {
+          cellForce
+              .setType(MEMBRANE)
+              .getNearPoints().put(direction, lookPoint);
+        }
+
+        //TODO maybe delete it
         Optional<Cell> intersectedCell = other.stream().filter(c -> c.isKnown(lookForce)).findFirst();
         if(intersectedCell.isPresent()) {
           Integer cellIntersections = cellSameForcesCount.getOrDefault(intersectedCell.get(), 0);
@@ -108,20 +130,5 @@ public class Cell {
     return this;
   }
 
-  public Cell rebuildParts(Board board, List<Forces> myForces){
-//    cores.rebuild(cellForces, myForces);
-    //todo merge cores
-//    membrane.rebuild(board, cellForces, cores, myForces);
-    return this;
-  }
-
-  public boolean isKnown(Forces force) {
-    return cellForces.contains(force);
-  }
-
-  private void mergeCells(Cell c1, Cell c2) {
-    //TODO add logic
-    //TODO merge cells??? pass cells, membrane, readjust etc...
-  }
 
 }

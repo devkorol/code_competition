@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.codenjoy.dojo.games.expansion.Board;
 import com.codenjoy.dojo.games.expansion.Forces;
+import com.codenjoy.dojo.games.expansion.Forces.ForceType;
 import com.codenjoy.dojo.services.PointImpl;
 import java.util.Collections;
 import org.json.JSONObject;
@@ -18,7 +19,7 @@ public class CellExpandTest {
 
   @Test
   public void expandToAdjacentTest_SamePoint() {
-    a.expandToAdjacent(getBoard(), asList(
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1)
     ), Collections.emptyList());
     assertEquals(1, a.getCellForces().size());
@@ -26,7 +27,7 @@ public class CellExpandTest {
 
   @Test
   public void expandToAdjacentTest_NextPoint() {
-    a.expandToAdjacent(getBoard(), asList(
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1),
         new Forces(new PointImpl(2,5), 1)
     ), Collections.emptyList());
@@ -36,7 +37,7 @@ public class CellExpandTest {
 
   @Test
   public void expandToAdjacentTest_Gap() {
-    a.expandToAdjacent(getBoard(), asList(
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1),
         new Forces(new PointImpl(3,5), 1)
     ), Collections.emptyList());
@@ -46,7 +47,7 @@ public class CellExpandTest {
 
   @Test
   public void expandToAdjacentTest_Tree() {
-    a.expandToAdjacent(getBoard(), asList(
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1),
         new Forces(new PointImpl(2,5), 1),
         new Forces(new PointImpl(3,5), 1),
@@ -64,25 +65,27 @@ public class CellExpandTest {
 
   @Test
   public void expandToAdjacentTest_TwoCells() {
-    a.expandToAdjacent(getBoard(), asList(
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1),
         new Forces(new PointImpl(2,5), 1),
         new Forces(new PointImpl(3,5), 1)
     ), asList(
-        new Cell(
-            new Forces(new PointImpl(2,5), 1)
-        )
+        getCell(new Forces(new PointImpl(2, 5), 1))
     ));
     System.out.println(a.getCellForces());
     assertEquals(1, a.getCellForces().size());
   }
 
+  private static Cell getCell(Forces forces) {
+    return new Cell(
+        forces
+    ){};
+  }
+
   @Test
   public void expandToAdjacentTest_TwoCellsMerge() {
-    Cell sameCell = new Cell(
-        new Forces(new PointImpl(2, 5), 1)
-    );
-    a.expandToAdjacent(getBoard(), asList(
+    Cell sameCell = getCell(new Forces(new PointImpl(2, 5), 1));
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1),
         new Forces(new PointImpl(2,5), 1),
         new Forces(new PointImpl(3,5), 1)
@@ -98,7 +101,7 @@ public class CellExpandTest {
 
   @Test
   public void expandToAdjacentTest_NextPointHistory() {
-    a.expandToAdjacent(getBoard(), asList(
+    a.roundRobinCollectCellPoints(getBoard(), asList(
         new Forces(new PointImpl(1,5), 1),
         new Forces(new PointImpl(2,5), 1)
     ), Collections.emptyList());
@@ -108,12 +111,41 @@ public class CellExpandTest {
     assertEquals(1, a.getNewForcesHistory().get(0).size());
   }
 
+  @Test
+  public void expandToAdjacentTest_SingleCheckTypeInTheCorner() {
+    a.roundRobinCollectCellPoints(getBoard(), asList(
+        new Forces(new PointImpl(1,5), 1)
+    ), Collections.emptyList());
+
+    System.out.println(base.getNearPoints());
+    assertEquals(ForceType.MEMBRANE, base.getType());
+    assertEquals(3, base.getNearPoints().size());
+  }
+
+  @Test
+  public void expandToAdjacentTest_SingleCheckTypeInTheCornerMyAdjacent() {
+    a.getCellForces().add(
+        new Forces(new PointImpl(2,5), 1)
+    );
+    a.roundRobinCollectCellPoints(getBoard(), asList(
+        new Forces(new PointImpl(1,5), 1),
+        new Forces(new PointImpl(2,5), 1)
+    ), Collections.emptyList());
+
+
+    System.out.println(a.getCellForces());
+    System.out.println(base.getNearPoints());
+    assertEquals(ForceType.MEMBRANE, base.getType());
+    assertEquals(2, base.getNearPoints().size());
+  }
+
+
 
   private Cell a;
 
   @Before
   public void setup() {
-    a = new Cell(base);
+    a = getCell(base);
   }
 
   private Board getBoard() {

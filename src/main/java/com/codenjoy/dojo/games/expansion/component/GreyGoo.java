@@ -42,23 +42,18 @@ public class GreyGoo {
   protected void beforeDecisionRefresh(Board board, List<Forces> myForces) {
     cells.forEach(c -> c
         .refreshPoints(myForces)
-        .expandToAdjacent(board, myForces, cells));
+        .roundRobinCollectCellPoints(board, myForces, cells));
 
-    mergeAdjactentCells();
 
-    cells.forEach(c -> c
-        .rebuildParts(board, myForces));
-
-    //init new cells
-    for (Forces myForce : myForces) {
-      if(cells.isEmpty()
-          || cells.stream().noneMatch(c -> c.isKnown(myForce))) {
-        cells.add(new Cell(myForce)
-            .refreshPoints(myForces)
-            .expandToAdjacent(board, myForces, cells)
-            .rebuildParts(board, myForces));
-      }
-    }
+    //TODO init new cells from wandering forces
+//    for (Forces myForce : myForces) {
+//      if(cells.isEmpty()
+//          || cells.stream().noneMatch(c -> c.isKnown(myForce))) {
+//        cells.add(new Cell(myForce)
+//            .refreshPoints(myForces)
+//            .roundRobinCollectCellPoints(board, myForces, cells);
+//      }
+//    }
   }
 
   protected void mergeAdjactentCells() {

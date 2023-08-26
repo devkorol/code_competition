@@ -29,14 +29,19 @@ import static com.codenjoy.dojo.services.PointImpl.pt;
 import com.codenjoy.dojo.client.Utils;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.PointImpl;
+import com.codenjoy.dojo.services.QDirection;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.json.JSONObject;
 
 @Setter
 @Getter
+@Accessors(chain = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Forces {
 
@@ -48,6 +53,8 @@ public class Forces {
     private ForceType type;
 
     private final CircularFifoQueue<Point> moveHistory = new CircularFifoQueue(HISTORY_FORCE_MOVE_SIZE);
+
+    private Map<QDirection, Point> nearPoints = new HashMap<>(10);
 
     public Forces(Point region, int count) {
         this.region = new PointImpl(region);
@@ -71,6 +78,7 @@ public class Forces {
 
     public static enum ForceType {
         CORE,
-        MEMBRANE;
+        MEMBRANE,
+        AIMLESS;
     }
 }

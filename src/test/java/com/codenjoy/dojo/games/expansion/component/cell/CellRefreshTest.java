@@ -49,6 +49,6 @@ public class CellRefreshTest {
 
   @Before
   public void setup() {
-    a = new Cell(base);
+    a = new Cell(base) {};
   }
 }

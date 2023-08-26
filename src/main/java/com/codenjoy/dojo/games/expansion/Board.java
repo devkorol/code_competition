@@ -23,20 +23,27 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
+import static com.codenjoy.dojo.client.AbstractLayeredBoard.Layers.LAYER1;
+import static com.codenjoy.dojo.client.AbstractLayeredBoard.Layers.LAYER2;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_IN_LEFT;
+import static com.codenjoy.dojo.games.expansion.Element.ANGLE_IN_RIGHT;
+import static com.codenjoy.dojo.games.expansion.Element.BASE3;
+import static com.codenjoy.dojo.games.expansion.Element.BASE4;
+import static com.codenjoy.dojo.games.expansion.Element.EMPTY;
+import static com.codenjoy.dojo.games.expansion.Element.FLOOR;
+import static com.codenjoy.dojo.games.expansion.Element.GOLD;
+import static com.codenjoy.dojo.games.expansion.Element.HOLE;
+import static com.codenjoy.dojo.games.expansion.Element.SPACE;
+import static com.codenjoy.dojo.games.expansion.ElementUtils.barriers;
+import static com.codenjoy.dojo.services.PointImpl.pt;
+
 import com.codenjoy.dojo.client.AbstractBoard;
 import com.codenjoy.dojo.client.Utils;
 import com.codenjoy.dojo.services.Point;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
-
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.codenjoy.dojo.client.AbstractLayeredBoard.Layers.LAYER1;
-import static com.codenjoy.dojo.client.AbstractLayeredBoard.Layers.LAYER2;
-import static com.codenjoy.dojo.games.expansion.Element.*;
-import static com.codenjoy.dojo.games.expansion.ElementUtils.barriers;
-import static com.codenjoy.dojo.services.PointImpl.pt;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 
 /**
  * The class is a wrapper over the board string
@@ -391,5 +398,9 @@ public class Board extends AbstractBoard<Element> {
             }
         }
         return null;
+    }
+
+    public boolean isBarrierAt(Point p) {
+        return isBarrierAt(p.getX(), p.getY());
     }
 }
