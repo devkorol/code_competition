@@ -14,7 +14,7 @@ public class Membrane {
 
 
   //TODO do i really need it? only if i wanna have state
-  public void rebuild(Board board, Set<Forces> cellForces, List<Core> cores, List<Forces> myForces) {
+  public void rebuild(Board board, Set<Forces> cellForces, List<Cores> cores, List<Forces> myForces) {
     Set<Forces> myForcesSet = new HashSet<>(myForces);
     membraneForces = new HashSet<>(100);
 

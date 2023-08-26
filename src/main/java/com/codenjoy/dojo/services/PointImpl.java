@@ -22,10 +22,9 @@ package com.codenjoy.dojo.services;
  * #L%
  */
 
-import org.json.JSONObject;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.json.JSONObject;
 
 /**
  * Каждый объект на поле имеет свои координаты. Этот класс обычно используется дял указания координат или как родитель.
@@ -188,8 +187,9 @@ public class PointImpl implements Point, Comparable<Point> {
     }
 
     @Override
-    public void move(QDirection direction) {
+    public Point move(QDirection direction) {
         this.move(direction.change(this));
+        return this;
     }
 
     @Override

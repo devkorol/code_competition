@@ -9,13 +9,13 @@ import java.util.Optional;
 import lombok.Getter;
 
 @Getter
-public class Core {
+public class Cores {
 
   protected Forces actual;
   protected Forces prev;
   protected ForcesMoves move;
 
-  public Core(Forces actual) {
+  public Cores(Forces actual) {
     this.actual = actual;
   }
 
@@ -42,7 +42,4 @@ public class Core {
 
     return false;
   }
-
-
-
 }

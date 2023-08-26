@@ -15,7 +15,7 @@ public class CoreTest {
 
   @Test
   public void isAliveTest_rightTrue() {
-    Core a = new Core(new Forces(new PointImpl(1, 1), 1));
+    Cores a = new Cores(new Forces(new PointImpl(1, 1), 1));
     a.move = new ForcesMoves(new PointImpl(1, 1), 1, QDirection.RIGHT);
 
     boolean b = a.refreshAndCheckIsAlive(
@@ -27,7 +27,7 @@ public class CoreTest {
 
   @Test
   public void isAliveTest_rightLostAndPrev() {
-    Core a = new Core(new Forces(new PointImpl(1, 1), 1));
+    Cores a = new Cores(new Forces(new PointImpl(1, 1), 1));
     a.move = new ForcesMoves(new PointImpl(1, 1), 1, QDirection.RIGHT);
 
     boolean b = a.refreshAndCheckIsAlive(
@@ -39,7 +39,7 @@ public class CoreTest {
 
   @Test
   public void isAliveTest_notFound() {
-    Core a = new Core(new Forces(new PointImpl(1, 1), 1));
+    Cores a = new Cores(new Forces(new PointImpl(1, 1), 1));
     a.move = new ForcesMoves(new PointImpl(1, 1), 1, QDirection.RIGHT);
 
     boolean b = a.refreshAndCheckIsAlive(
@@ -52,7 +52,7 @@ public class CoreTest {
 
   @Test
   public void isAliveTest_updateActualForce() {
-    Core a = new Core(new Forces(new PointImpl(1, 1), 1));
+    Cores a = new Cores(new Forces(new PointImpl(1, 1), 1));
     a.move = new ForcesMoves(new PointImpl(1, 1), 1, QDirection.RIGHT);
 
     boolean b = a.refreshAndCheckIsAlive(

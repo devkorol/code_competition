@@ -10,9 +10,13 @@ import com.codenjoy.dojo.games.expansion.ForcesMoves;
 import com.codenjoy.dojo.games.expansion.component.cell.Cell;
 import com.codenjoy.dojo.services.QDirection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 public class GreyGoo {
+  public static final int HISTORY_CELL_SIZE = 3;
+  public static final int HISTORY_FORCE_MOVE_SIZE = 3;
 
   protected List<Cell> cells = new ArrayList<>();
 
@@ -22,12 +26,27 @@ public class GreyGoo {
 
   public Command process(Board board) {
     List<Forces> myForces = board.getMyForces();
-    if (myForces.isEmpty()) return doNothing();
+    if (myForces.isEmpty())
+      return doNothing();
 
-    //refresh start
+    beforeDecisionRefresh(board, myForces);
+
+    //todo delete
+    Forces last = myForces.get(myForces.size() - 1);
+    return Command
+        .move(new ForcesMoves(last.getRegion(), last.getCount() -1, QDirection.LEFT))
+        .increase(new Forces(last.getRegion(),  (10)))
+        .build();
+  }
+
+  protected void beforeDecisionRefresh(Board board, List<Forces> myForces) {
     cells.forEach(c -> c
         .refreshPoints(myForces)
-        .expandToAdjacent(board, myForces, cells)
+        .expandToAdjacent(board, myForces, cells));
+
+    mergeAdjactentCells();
+
+    cells.forEach(c -> c
         .rebuildParts(board, myForces));
 
     //init new cells
@@ -40,16 +59,19 @@ public class GreyGoo {
             .rebuildParts(board, myForces));
       }
     }
+  }
 
-    //refresh end
-
-
-
-
-    Forces last = myForces.get(myForces.size() - 1);
-    return Command
-        .move(new ForcesMoves(last.getRegion(), last.getCount() -1, QDirection.LEFT))
-        .increase(new Forces(last.getRegion(),  (10)))
-        .build();
+  protected void mergeAdjactentCells() {
+    Iterator<Cell> iterator = cells.iterator();
+    while (iterator.hasNext()) {
+      Cell cell = iterator.next();
+      if(!cell.getCellSameForcesCount().isEmpty()) {
+        for (Entry<Cell, Integer> sameCellEntry : cell.getCellSameForcesCount().entrySet()) {
+          //TODO merge
+//          sameCellEntry.merge(cell);
+          iterator.remove();
+        }
+      }
+    }
   }
 }

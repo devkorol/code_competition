@@ -23,22 +23,31 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
+import static com.codenjoy.dojo.games.expansion.component.GreyGoo.HISTORY_FORCE_MOVE_SIZE;
 import static com.codenjoy.dojo.services.PointImpl.pt;
 
 import com.codenjoy.dojo.client.Utils;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.PointImpl;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.json.JSONObject;
 
 @Setter
-@EqualsAndHashCode
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Forces {
 
-    @EqualsAndHashCode.Exclude
+
     private int count;
+    @EqualsAndHashCode.Include
     private Point region;
+
+    private ForceType type;
+
+    private final CircularFifoQueue<Point> moveHistory = new CircularFifoQueue(HISTORY_FORCE_MOVE_SIZE);
 
     public Forces(Point region, int count) {
         this.region = new PointImpl(region);
@@ -51,14 +60,6 @@ public class Forces {
         region = pt(pt.getInt("x"), pt.getInt("y"));
     }
 
-    public Point getRegion() {
-        return region;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
     public String json() {
         return Utils.prettyPrintObject(this);
     }
@@ -66,5 +67,10 @@ public class Forces {
     @Override
     public String toString() {
         return String.format("[%s,%s]=%s", region.getX(), region.getY(), count);
+    }
+
+    public static enum ForceType {
+        CORE,
+        MEMBRANE;
     }
 }

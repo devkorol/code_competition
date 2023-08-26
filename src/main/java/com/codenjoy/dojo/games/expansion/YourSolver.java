@@ -59,13 +59,14 @@ public class YourSolver extends AbstractSolver {
      */
     @Override
     public Command whatToDo(Board board) {
-        if (board.isGameOver() || board.isInLobby()) return doNothing();
-        if(lastTick > board.getTick()) {
-            greyGoo.reset();
-        }
-        lastTick = board.getTick();
-
         try {
+            if (board.isGameOver() || board.isInLobby()) return doNothing();
+
+            if(lastTick > board.getTick()) {
+                greyGoo.reset();
+            }
+            lastTick = board.getTick();
+
             return greyGoo.process(board);
         } catch (Exception e) {
             System.out.println("MAIN ERROR");

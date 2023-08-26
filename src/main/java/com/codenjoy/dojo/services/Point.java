@@ -116,7 +116,7 @@ public interface Point extends Comparable<Point> {
      * Changes current point in given direction
      * @param direction one of 8 directions
      */
-    void move(QDirection direction);
+    Point move(QDirection direction);
 
     /**
      * Changes current point in given direction

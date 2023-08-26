@@ -23,19 +23,18 @@ package com.codenjoy.dojo.client;
  */
 
 
+import static com.codenjoy.dojo.services.PointImpl.pt;
+
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.annotations.PerformanceOptimized;
 import com.codenjoy.dojo.services.printer.CharElement;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-
-import static com.codenjoy.dojo.services.PointImpl.pt;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public abstract class AbstractLayeredBoard<E extends CharElement> implements ClientBoard {
 
@@ -317,6 +316,10 @@ public abstract class AbstractLayeredBoard<E extends CharElement> implements Cli
             result.append("\n").append(layer(layer).boardAsString());
         }
         return result.toString();
+    }
+
+    public boolean isOutOf(Point point) {
+        return isOutOf(point.getX(), point.getY());
     }
 
     public boolean isOutOf(int x, int y) {

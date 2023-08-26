@@ -77,6 +77,38 @@ public class CellExpandTest {
     assertEquals(1, a.getCellForces().size());
   }
 
+  @Test
+  public void expandToAdjacentTest_TwoCellsMerge() {
+    Cell sameCell = new Cell(
+        new Forces(new PointImpl(2, 5), 1)
+    );
+    a.expandToAdjacent(getBoard(), asList(
+        new Forces(new PointImpl(1,5), 1),
+        new Forces(new PointImpl(2,5), 1),
+        new Forces(new PointImpl(3,5), 1)
+    ), asList(
+        sameCell
+    ));
+    System.out.println(a.getCellSameForcesCount());
+    assertEquals(1, a.getCellForces().size());
+    assertEquals(1, a.getCellSameForcesCount().size());
+    assertEquals(new Integer(1), a.getCellSameForcesCount().get(sameCell));
+  }
+
+
+  @Test
+  public void expandToAdjacentTest_NextPointHistory() {
+    a.expandToAdjacent(getBoard(), asList(
+        new Forces(new PointImpl(1,5), 1),
+        new Forces(new PointImpl(2,5), 1)
+    ), Collections.emptyList());
+
+    System.out.println(a.getCellForces());
+    assertEquals(2, a.getCellForces().size());
+    assertEquals(1, a.getNewForcesHistory().get(0).size());
+  }
+
+
   private Cell a;
 
   @Before

@@ -29,6 +29,20 @@ public class CellRefreshTest {
         base
     ));
     assertEquals(1, a.getCellForces().size());
+    assertEquals(2, a.getLostForcesHistory().get(0).size());
+  }
+
+  @Test
+  public void lostForceOneTestAndField() {
+    Forces lost = new Forces(new PointImpl(3, 5), 10);
+    a.getCellForces().add(lost);
+    a.getCellForces().add(base);
+
+    a.refreshPoints(asList(
+        base
+    ));
+    assertEquals(1, a.getCellForces().size());
+    assertEquals(lost, a.getLostForcesHistory().get(0).stream().findFirst().get());
   }
 
   private Cell a;

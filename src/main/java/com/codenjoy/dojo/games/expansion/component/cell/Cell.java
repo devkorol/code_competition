@@ -1,28 +1,40 @@
 package com.codenjoy.dojo.games.expansion.component.cell;
 
 
+import static com.codenjoy.dojo.games.expansion.component.GreyGoo.HISTORY_CELL_SIZE;
+
 import com.codenjoy.dojo.games.expansion.Board;
 import com.codenjoy.dojo.games.expansion.Forces;
-import com.codenjoy.dojo.games.expansion.component.cell.part.Core;
+import com.codenjoy.dojo.games.expansion.component.cell.part.Cores;
 import com.codenjoy.dojo.games.expansion.component.cell.part.Membrane;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.QDirection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import lombok.Getter;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 
 @Getter
 public class Cell {
   private final Membrane membrane;
-  private final List<Core> cores = new ArrayList<>();
-  private final Set<Forces> cellForces = new HashSet<>(100);
+  private final List<Cores> cores = new ArrayList<>();
+  private final Set<Forces> cellForces = new HashSet<>(500);
+
+  private final CircularFifoQueue<HashSet<Forces>> lostForcesHistory = new CircularFifoQueue(
+      HISTORY_CELL_SIZE);
+  private final CircularFifoQueue<HashSet<Forces>> newForcesHistory = new CircularFifoQueue(
+      HISTORY_CELL_SIZE);
+
+  private Map<Cell, Integer> cellSameForcesCount = new HashMap<>();
 
   public Cell(Forces force) {
     membrane = new Membrane();
@@ -30,13 +42,21 @@ public class Cell {
   }
 
   public Cell refreshPoints(List<Forces> myForces){
+    HashSet<Forces> lostForces = new HashSet<>();
+    lostForcesHistory.add(lostForces);
+
     Iterator<Forces> iterator = cellForces.iterator();
     while (iterator.hasNext()) {
       Forces cellForce = iterator.next();
-      Optional<Forces> boardForce = myForces.stream().filter(f -> f.getRegion().equals(cellForce.getRegion())).findFirst();
+      Optional<Forces> boardForce =
+          myForces.stream()
+              .filter(f -> f.equals(cellForce))
+              .findFirst();
+
       if(boardForce.isPresent()) {
         cellForce.setCount(boardForce.get().getCount());
       } else {
+        lostForces.add(cellForce);
         iterator.remove();
       }
     }
@@ -44,34 +64,43 @@ public class Cell {
   }
 
   public Cell expandToAdjacent(Board board, List<Forces> myForces, List<Cell> other) {
+    HashSet<Forces> newForces = new HashSet<>();
+    newForcesHistory.add(newForces);
+
     Queue<Forces> queue = new LinkedList<>(cellForces);
+    cellSameForcesCount = new HashMap<>();
 
     while (!queue.isEmpty()) {
-      Forces force = queue.remove();
+      Forces cellForce = queue.remove();
 
       //search for new
       for (QDirection direction : QDirection.getValues()) {
-        Point newPoint = force.getRegion().copy();
-        newPoint.move(direction);
-        if(board.isOutOf(newPoint.getX(), newPoint.getY())) {
+        Point lookPoint = cellForce.getRegion().copy().move(direction);
+
+        if(board.isOutOf(lookPoint)) {
           continue;
         }
 
-        Forces newForce = new Forces(newPoint, 1);
-
-        if (cellForces.contains(newForce)) {
-          continue;
-        }
-        if(other.stream().anyMatch(c -> c.isKnown(newForce))) {
-//          todo mergeCells();
+        Forces lookForce = new Forces(lookPoint, 1);
+        if (cellForces.contains(lookForce)) {
           continue;
         }
 
-        Optional<Forces> anyMyForce = myForces.stream().filter(f -> f.getRegion().equals(newPoint)).findAny();
+        Optional<Cell> intersectedCell = other.stream().filter(c -> c.isKnown(lookForce)).findFirst();
+        if(intersectedCell.isPresent()) {
+          Integer cellIntersections = cellSameForcesCount.getOrDefault(intersectedCell.get(), 0);
+          cellSameForcesCount.put(intersectedCell.get(), ++cellIntersections);
+
+          continue;
+        }
+
+        Optional<Forces> anyMyForce = myForces.stream().filter(f -> f.getRegion().equals(lookPoint)).findAny();
         if (anyMyForce.isPresent()) {
-          newForce.setCount(anyMyForce.get().getCount());
-          cellForces.add(newForce);
-          queue.add(anyMyForce.get());
+          lookForce.setCount(anyMyForce.get().getCount());
+
+          newForces.add(lookForce);
+          cellForces.add(lookForce);
+          queue.add(lookForce);
         }
       }
     }
@@ -80,17 +109,9 @@ public class Cell {
   }
 
   public Cell rebuildParts(Board board, List<Forces> myForces){
-    Iterator<Core> iterator = cores.iterator();
-    while (iterator.hasNext()) {
-      Core core = iterator.next();
-      if(!core.refreshAndCheckIsAlive(myForces)) {
-        iterator.remove();
-      }
-    }
+//    cores.rebuild(cellForces, myForces);
     //todo merge cores
-
-
-    membrane.rebuild(board, cellForces, cores, myForces);
+//    membrane.rebuild(board, cellForces, cores, myForces);
     return this;
   }
 

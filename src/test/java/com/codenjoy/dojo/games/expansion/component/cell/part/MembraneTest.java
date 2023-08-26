@@ -79,7 +79,7 @@ public class MembraneTest {
         new HashSet<>(asList(
             new Forces(new PointImpl(1, 5), 1)
         )), asList(
-            new Core(new Forces(new PointImpl(1, 5), 1))
+            new Cores(new Forces(new PointImpl(1, 5), 1))
         ), asList(
             new Forces(new PointImpl(1, 5), 1)
         ));
