@@ -66,7 +66,7 @@
                             <execution>
                                 <!-- Плагин отвечает за мутационное тестирование.
                                      Включается для игр ключом -Pmutation -->
-                                <id>[##5]-mutation-testing</id>
+                                <id>[##6]-mutation-testing</id>
                                 <goals>
                                     <goal>mutationCoverage</goal>
                                 </goals>
@@ -230,10 +230,10 @@
                         <!-- Плагин отвечает за очистку папки
                              target перед сборкой -->
                         <id>[##1]-clean-target</id>
-                        <phase>clean</phase>
                         <goals>
                             <goal>clean</goal>
                         </goals>
+                        <phase>clean</phase>
                     </execution>
                     <execution>
                         <id>default-clean</id>
@@ -335,17 +335,17 @@
                 <version>${maven-jar-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>default-jar</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
                         <!-- Плагин отвечает за сборку jar
                              файла -->
-                        <id>[##6]-make-jar</id>
+                        <id>[##5]-make-jar</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <phase>prepare-package</phase>
+                    </execution>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
                 <configuration>
@@ -404,8 +404,8 @@
                                 <copy file="${client.sources}"
                                       todir="target/classes/resources/user"/>
 
-                                <!-- Это нужно для плагина с id [##10]-run-ant engine/pom.xml
-                                     ведь при сборке всего CodingDojo/pom.xml он стелает
+                                <!-- Это нужно для плагина с id [##11]-run-ant в engine/pom.xml
+                                     ведь при сборке всего CodingDojo/pom.xml он слетает
                                      так как не может найти pom.xml-->
                                 <copy todir="${project.build.directory}">
                                     <fileset file="${project.basedir}/pom.xml"/>

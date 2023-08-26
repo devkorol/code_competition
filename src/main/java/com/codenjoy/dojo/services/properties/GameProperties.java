@@ -22,14 +22,20 @@ package com.codenjoy.dojo.services.properties;
  * #L%
  */
 
+import com.codenjoy.dojo.utils.FilePathUtils;
+import com.codenjoy.dojo.utils.PrintUtils;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
+import static com.codenjoy.dojo.utils.PrintUtils.Color.TEXT;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
 public class GameProperties {
@@ -39,6 +45,15 @@ public class GameProperties {
     private Locale locale;
     private Properties properties;
     private String canonicalGame;
+    private boolean silentMode;
+
+    public GameProperties() {
+        this(false);
+    }
+
+    public GameProperties(boolean silentMode) {
+        this.silentMode = silentMode;
+    }
 
     public static String get(String base, Locale locale, String game, String name) {
         GameProperties properties = new GameProperties();
@@ -46,6 +61,11 @@ public class GameProperties {
             throw new RuntimeException("Cant load properties file for game: " + game);
         }
         return properties.get(name);
+    }
+
+    public static boolean has(String base, Locale locale, String game) {
+        GameProperties properties = new GameProperties(true);
+        return properties.load(base, locale, game);
     }
 
     public boolean load(String base, Locale locale, String game) {
@@ -61,13 +81,19 @@ public class GameProperties {
 
         String sourcesPath = replace(base + "${game-source}" + locale(INFO_PROPERTIES), canonicalGame);
         boolean success = tryLoadFromSources(sourcesPath);
-        if (!success) {
-            System.out.printf("Properties file not found in either: \n" +
+        if (!success && !silentMode) {
+            PrintUtils.printf("Properties file not found in either: \n" +
                     "\t\t'classpath:%s'\n" +
-                    "\t\t'file:%s'\n",
-                    classPath, new File(sourcesPath).getAbsolutePath());
+                    "\t\t'file:%s'", TEXT,
+                    classPath, FilePathUtils.normalize(new File(sourcesPath).getAbsolutePath()));
         }
         return success;
+    }
+
+    public Map<String, String> properties() {
+        return properties.entrySet().stream()
+                .collect(toMap(entry -> (String) entry.getKey(),
+                        entry -> (String) entry.getValue()));
     }
 
     private String locale(String template) {
@@ -88,7 +114,9 @@ public class GameProperties {
                 return true;
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            if (!silentMode) {
+                exception.printStackTrace();
+            }
         }
         return false;
     }
@@ -108,7 +136,9 @@ public class GameProperties {
                 return true;
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            if (!silentMode) {
+                exception.printStackTrace();
+            }
         }
         return false;
     }
@@ -132,7 +162,9 @@ public class GameProperties {
         }
         if (!properties.containsKey(key)) {
             throw new RuntimeException(String.format(
-                    "Key not found for either element or setting: [name=%s, game=%s]",
+                    "Key not found for either element or setting: [name=%s, game=%s]. " +
+                    "Please check that you have defined it in the info.properties file " +
+                    "in the resources folder of the game.",
                     name, getGame(canonicalGame)));
         }
         return properties.getProperty(key);

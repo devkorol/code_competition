@@ -22,17 +22,25 @@ package com.codenjoy.dojo.services.generator;
  * #L%
  */
 
-import com.codenjoy.dojo.utils.SmokeUtils;
+import com.codenjoy.dojo.utils.RedirectOutput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.Locale;
 
+import static com.codenjoy.dojo.services.generator.ElementGenerator.PROJECT_BASE_FOLDER;
+import static com.codenjoy.dojo.services.generator.ElementGeneratorRunner.localesFor;
+import static com.codenjoy.dojo.services.generator.ElementGeneratorRunner.pleaseRunInAllProject;
+import static com.codenjoy.dojo.utils.SmokeUtils.assertSmokeEquals;
 import static java.util.Locale.ENGLISH;
 
 public class ElementGeneratorTest {
+
+    public static final Locale OTHER_EXISTS_LOCALE = Locale.forLanguageTag("ru");
+    public static final Locale NOT_EXISTS_LOCALE = Locale.CHINA;
+    private RedirectOutput output = new RedirectOutput();
 
     @Rule
     public TestName test = new TestName();
@@ -79,6 +87,7 @@ public class ElementGeneratorTest {
 
     @Test
     public void shouldGenerate_testGame_markdownHeaderLanguage() {
+        // 1 language
         assertGenerate("test", "md_header");
     }
 
@@ -128,13 +137,45 @@ public class ElementGeneratorTest {
     }
 
     @Test
+    public void shouldGenerate_sampleGame_markdownHeaderLanguage() {
+        // 1 language
+        assertGenerate("sample", "md_header");
+    }
+
+    @Test
     public void shouldGenerate_mollymageGame_markdownLanguage() {
         assertGenerate("mollymage", "md");
     }
 
     @Test
+    public void shouldGenerate_mollymageGame_markdownLanguage_otherExistsLocale() {
+        assertGenerate("mollymage", "md", OTHER_EXISTS_LOCALE);
+    }
+
+    @Test
+    public void shouldGenerate_mollymageGame_markdownHeaderLanguage() {
+        // 2 languages
+        assertGenerate("mollymage", "md_header");
+    }
+
+    @Test
+    public void shouldGenerate_mollymageGame_markdownLanguage_notExistsLocale() {
+        try {
+            output.redirect();
+            assertGenerate("mollymage", "md", NOT_EXISTS_LOCALE);
+        } finally {
+            output.rollback();
+        }
+    }
+
+    @Test
     public void shouldGenerate_mollymageGame_javaLanguage() {
         assertGenerate("mollymage", "java");
+    }
+
+    @Test
+    public void shouldGenerate_mollymageGame_javaLanguage_otherExistsLocale() {
+        assertGenerate("mollymage", "java", OTHER_EXISTS_LOCALE);
     }
 
     @Test
@@ -148,19 +189,25 @@ public class ElementGeneratorTest {
     }
 
     private void assertEquals(String actual) {
-        assertSmokeEquals(actual, getClass(), test);
-    }
-
-    public static void assertSmokeEquals(String actual, Class owner, TestName test) {
-        SmokeUtils.assertSmokeFile(owner.getSimpleName()
-                + "/" + test.getMethodName() +  ".data",
-                Arrays.asList(actual
-                        .replace("\r\n", "\n")
-                        .split("\n")));
+        assertSmokeEquals(actual, getClass(), test.getMethodName());
     }
 
     private void assertGenerate(String game, String language) {
-        assertEquals(new ElementGenerator(game, language, ENGLISH, base(game)).generate());
+        assertGenerate(game, language, ENGLISH);
+    }
+
+    private void assertGenerate(String game, String language, Locale locale) {
+        String base = base(game);
+        if (base == null) {
+            skipTestWarning();
+            return;
+        }
+        String actual = new ElementGenerator(game, language, locale, localesFor("en,ru"), base).generate();
+        if (actual == null) {
+            // если ничего не пришло, скорее всего там ошибка
+            actual = output.toString();
+        }
+        assertEquals(actual);
     }
 
     // TODO если получится избавиться от этого чуда, будет здорово
@@ -168,13 +215,25 @@ public class ElementGeneratorTest {
     //      двух режимах: из запущенного приложения - тогда файлы properties
     //      ищем в classpath и батником для генерации elements - там мы
     //      ищем properties в сырцах.
-    private String base(String game) {
+    public static String base(String game) {
         switch (game) {
             case "test":
             case "test-another":
                 return "";
             default:
-                return new File(".").getAbsolutePath();
+                return pathInsideCodingDojo();
         }
+    }
+
+    private static String pathInsideCodingDojo() {
+        String path = new File(".").getAbsolutePath();
+        return path.contains(PROJECT_BASE_FOLDER) ? path : null;
+
+    }
+
+    public static void skipTestWarning() {
+        // TODO если java-client запущен без других проектов, то тесты clifford/mollymage не проходят
+        pleaseRunInAllProject();
+        System.out.println("WARNING: Skip test.");
     }
 }

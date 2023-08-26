@@ -25,11 +25,12 @@ package com.codenjoy.dojo.services.generator.language;
 import com.codenjoy.dojo.services.generator.Template;
 
 import java.util.List;
+import java.util.Locale;
 
 public class Cpp implements Template {
 
     @Override
-    public String header(List<String> locales) {
+    public String header(List<Locale> locales) {
         return "/*-\n" +
                 " * ${tag}\n" +
                 " * Codenjoy - it's a dojo-like platform from developers to developers.\n" +
@@ -92,7 +93,7 @@ public class Cpp implements Template {
     }
 
     @Override
-    public String line(boolean subrepo) {
+    public String line() {
         return "    result[LL(\"${element}\")] = LL('${char}');\n";
     }
 

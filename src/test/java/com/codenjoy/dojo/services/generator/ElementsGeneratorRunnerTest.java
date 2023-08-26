@@ -22,36 +22,47 @@ package com.codenjoy.dojo.services.generator;
  * #L%
  */
 
+import com.codenjoy.dojo.utils.RedirectOutput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
-import static com.codenjoy.dojo.services.generator.ElementGeneratorTest.assertSmokeEquals;
+import static com.codenjoy.dojo.services.generator.ElementGeneratorTest.base;
+import static com.codenjoy.dojo.services.generator.ElementGeneratorTest.skipTestWarning;
+import static com.codenjoy.dojo.utils.SmokeUtils.assertSmokeEquals;
 
 public class ElementsGeneratorRunnerTest {
 
     @Rule
     public TestName test = new TestName();
 
+    private RedirectOutput output = new RedirectOutput();
+
     @Test
     public void shouldGenerate_allGames_andLanguages() {
         // given
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(stream));
-
+        output.redirect();
         ElementGenerator.READONLY = true;
 
-        // when
-        ElementGeneratorRunner.main(new String[0]);
+        try {
+            // when
+            ElementGeneratorRunner.main(new String[0]);
 
-        // then
-        assertEquals(stream.toString());
+            // then
+            String actual = output.toString();
+            output.rollback();
+            if (base("") == null) {
+                skipTestWarning();
+                return;
+            }
+            assertEquals(actual);
+        } finally {
+            // when maven run tests it uses same test class instance for each test
+            ElementGenerator.READONLY = false;
+        }
     }
 
     private void assertEquals(String actual) {
-        assertSmokeEquals(actual, getClass(), test);
+        assertSmokeEquals(actual, getClass(), test.getMethodName());
     }
 }

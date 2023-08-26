@@ -34,7 +34,11 @@ public interface Testing {
 
     void assertEquals(String message, Object o1, Object o2);
 
+    void fail(String message);
+
     <T> T mock(Class<T> clazz);
+
+    <T> T spy(T object);
 
     <T> Testing.OngoingStubbing<T> when(T methodCall);
 

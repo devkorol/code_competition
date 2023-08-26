@@ -26,6 +26,7 @@ import com.codenjoy.dojo.games.sample.Element;
 import com.codenjoy.dojo.services.generator.language.Go;
 import com.codenjoy.dojo.services.printer.CharElement;
 import com.codenjoy.dojo.services.properties.GameProperties;
+import com.codenjoy.dojo.utils.PrintUtils;
 import com.codenjoy.dojo.utils.SmokeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,6 +35,9 @@ import java.util.*;
 import java.util.function.Function;
 
 import static com.codenjoy.dojo.services.properties.GameProperties.getGame;
+import static com.codenjoy.dojo.utils.FilePathUtils.normalize;
+import static com.codenjoy.dojo.utils.PrintUtils.Color.ERROR;
+import static com.codenjoy.dojo.utils.PrintUtils.Color.TEXT;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.capitalize;
@@ -41,22 +45,10 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 public class ElementGenerator {
 
     public static final int COMMENT_MAX_LENGTH = 60;
+    public static final String PROJECT_BASE_FOLDER = "CodingDojo";
 
     // используется для тестирования, этим флагом отключаем реальное сохранение файлов
     public static boolean READONLY = false;
-
-    // TODO динамически получать эту инфу, проверяя наличие файла .git в корне проекта
-    public static final List<String> SUBREPO_GAMES = Arrays.asList(
-            "icancode", "kata", "lemonade", "lunolet",
-            "reversi", "rubicscube", "sample", "sampletext",
-            "sudoku", "knibert", "namdreab", "rawelbbub",
-            "chess", "clifford", "excitebike",
-            "japanese", "mollymage", "selfdefense",
-            "vacuum", "verland", "xonix");
-
-    public static final List<String> ENGLISH_PRESENT = Arrays.asList(
-            "a2048", "clifford", "kata", "knibert",
-            "namdreab", "vacuum");
 
     public static final List<String> DIFFERENT_NAME_GAMES = Arrays.asList();
     public static final GameProperties gameProperties = new GameProperties();
@@ -64,34 +56,53 @@ public class ElementGenerator {
     private final String game;
     private final String canonicalGame;
 
-    private final boolean subrepo;
     private final String language;
     private final Template template;
     private final Locale locale;
+    private final List<Locale> locales;
     private String base;
 
-    public ElementGenerator(String game, String language, Locale locale, String inputBase) {
+    public ElementGenerator(String game, String language, Locale locale, List<Locale> locales, String inputBase) {
         this.canonicalGame = game;
         this.game = getGame(game);
         base = getBase(inputBase);
         this.locale = locale;
+        this.locales = locales.stream()
+                .map(it -> hasProperties(game, it) ? it : null)
+                .filter(Objects::nonNull)
+                .collect(toList());
 
         this.language = language;
         this.template = template();
-        subrepo = SUBREPO_GAMES.contains(game);
     }
 
-    private String getBase(String inputBase) {
-        if (!inputBase.contains("CodingDojo")) {
+    private boolean hasProperties(String game, Locale locale) {
+        return GameProperties.has(base, locale, game);
+    }
+
+    /**
+     * Разные способы запуска (из IDE, с bash) дают нам разный контекст.
+     * Но алгоритм хочет видеть тут одну и ту же папку.
+     * Потому этот метод необходим для унифицирования base папки.
+     * @param inputBase любая папка (в том числе внутри CodingDojo).
+     * @return Если в пути содержится CodingDojo, то путь будет сокращен до этой папки,
+     * иначе вернется без изменения.
+     */
+    public static String getBase(String inputBase) {
+        if (!inputBase.contains(PROJECT_BASE_FOLDER)) {
             return inputBase;
         }
         File absolute = new File(inputBase).getAbsoluteFile();
         while (absolute != null
-                && !absolute.getName().equals("CodingDojo"))
+                && !absolute.getName().equals(PROJECT_BASE_FOLDER))
         {
             absolute = absolute.getParentFile();
         }
-        return absolute.getAbsolutePath();
+        return normalize(absolute.getAbsolutePath());
+    }
+
+    public static String getBase() {
+        return getBase(new File(".").getAbsolutePath());
     }
 
     public static String getCanonicalGame(String game) {
@@ -104,21 +115,36 @@ public class ElementGenerator {
     }
 
     public String generate() {
-        return build(elements());
+        try {
+            return build(elements());
+        } catch (Exception exception) {
+            PrintUtils.printf(
+                    "Error during generate: [game=%s, language=%s, locale=%s]\n" +
+                    "With exception:        [%s]\n" +
+                    "Skipped!",
+                    ERROR,
+                    game, language, locale, exception.getMessage());
+            return null;
+        }
     }
 
     public void generateToFile() {
         File dest = new File(base + "/clients/" + replace(template.file()));
-        System.out.printf("Store '%s-%s' in file: '%s'\n",
-                game, language, dest.getAbsolutePath());
+        PrintUtils.printftab(() -> generate(dest),
+                "Store '%s:%s:%s' in file: '%s'", TEXT,
+                game, language, locale, normalize(dest.getAbsolutePath()));
+    }
 
+    private void generate(File dest) {
         // TODO пока не закончу переносить полезные методы с icancode/elemtnt.js
         //      не удалять эту строчку
-        if (game.equals("icancode") && language.equals("js")) return;
+        if (game.equals("icancode") && language.equals("js")) {
+            return;
+        }
 
-        String data = build(elements());
+        String data = generate();
 
-        if (!READONLY) {
+        if (!READONLY && data != null) {
             SmokeUtils.saveToFile(dest, data);
         }
     }
@@ -149,12 +175,12 @@ public class ElementGenerator {
     private String build(CharElement[] elements) {
         Template template = template();
 
-        String header = replace(template.header(locales()));
+        String header = replace(template.header(locales));
 
         Map<CharElement, String> infos = loadInfo(elements);
 
         List<String> lines = Arrays.stream(elements)
-                .map(el -> replace(template.line(subrepo), el, infos))
+                .map(el -> replace(template.line(), el, infos))
                 .collect(toList());
 
         List<String> infosList = new LinkedList<>(infos.values());
@@ -213,14 +239,6 @@ public class ElementGenerator {
                         LinkedHashMap::new));
     }
 
-    private List<String> locales() {
-        if (ENGLISH_PRESENT.contains(canonicalGame)) {
-            return Arrays.asList("ru", "en");
-        } else {
-            return Arrays.asList("ru");
-        }
-    }
-
     private String replace(String template, CharElement element, Map<CharElement, String> infos) {
         return replace(template)
                 .replace("${element-lower}", element.name().toLowerCase())
@@ -233,7 +251,8 @@ public class ElementGenerator {
         return GameProperties
                 .replace(template, canonicalGame)
                 .replace("${tag}", "#" + "%L") // because of warning in the mvn compile in phase lecense header generation
-                .replace("${language}", language);
+                .replace("${language}", language)
+                .replace("${locale}", locale.getLanguage());
     }
 
     private List<String> splitLength(String text, int length) {

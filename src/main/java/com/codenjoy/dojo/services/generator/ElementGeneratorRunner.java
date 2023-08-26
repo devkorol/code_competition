@@ -22,85 +22,122 @@ package com.codenjoy.dojo.services.generator;
  * #L%
  */
 
-import com.codenjoy.dojo.services.printer.CharElement;
+import com.codenjoy.dojo.utils.FilePathUtils;
+import com.codenjoy.dojo.utils.GamesUtils;
 import com.codenjoy.dojo.utils.PrintUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
 
 import java.io.File;
-import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
-import static com.codenjoy.dojo.utils.PrintUtils.Color.ERROR;
-import static com.codenjoy.dojo.utils.PrintUtils.Color.INFO;
-import static java.util.stream.Collectors.joining;
+import static com.codenjoy.dojo.services.generator.ElementGenerator.PROJECT_BASE_FOLDER;
+import static com.codenjoy.dojo.utils.PrintUtils.Color.*;
 import static java.util.stream.Collectors.toList;
 
 public class ElementGeneratorRunner {
 
-    public static final String ALL_GAMES = "all";
+    public static final String ALL = "all";
+    private static List<String> ALL_GAMES = GamesUtils.games();
+    private static List<String> ALL_LOCALES = Arrays.asList("en", "ru");
+    private static List<String> ALL_CLIENTS = Arrays.asList("md", "md_header", "md_footer", "java", "cpp", "go", "js", "php", "python", "csharp");
 
     private static String base;
     private static String games;
     private static String clients;
-    private static List<String> allGames;
-    private static Locale locale;
+    private static String locales;
 
     public static void main(String[] args) {
         System.out.println("+-----------------------------+");
         System.out.println("| Starting elements generator |");
         System.out.println("+-----------------------------+");
 
-        allGames = games();
         if (args != null && args.length == 4) {
             base = args[0];
             games = args[1];
             clients = args[2];
-            locale = Locale.forLanguageTag(args[3]);
-            printInfo("Environment");
+            locales = args[3];
+            printInfo("Environment", INFO);
         } else {
             base = "";
-            games = ALL_GAMES;
-            clients = "md,md_header,md_footer,java,cpp,go,js,php,python,csharp";
-            locale = Locale.ENGLISH;
-            printInfo("Runner");
+            games = ALL;
+            clients = ALL;
+            locales = ALL;
+            printInfo("Runner", INFO);
         }
-        if (isAllGames()) {
-            games = allGames.stream().collect(joining(","));
-        }
-
-        if (!new File(base).isAbsolute()) {
-            base = new File(base).getAbsoluteFile().getPath();
-            PrintUtils.printf("\t   absolute:'%s'\n",
-                    INFO,
-                    base);
-        }
+        games = decodeAll(games, ALL_GAMES);
+        locales = decodeAll(locales, ALL_LOCALES);
+        clients = decodeAll(clients, ALL_CLIENTS);
+        base = makeAbsolute(base);
+        printInfo("Processed", TEXT);
 
         if (!gamesSourcesPresent(base)) {
-            PrintUtils.printf("Please run this script on a fully cloned project c with submodules (with --recursive option)\n" +
-                            "    git clone --recursive https://github.com/codenjoyme/codenjoy.git\n",
-                    ERROR,
-                    base);
+            pleaseRunInAllProject();
             return;
         }
 
         for (String game : games.split(",")) {
             System.out.println();
-            if (!allGames.contains(game)) {
-                PrintUtils.printf("Game not found: '%s'\n", ERROR, game);
-                continue;
-            }
-            for (String language : clients.split(",")) {
-                new ElementGenerator(game, language, locale, base).generateToFile();
+            PrintUtils.printftab(() -> generate(game),
+                    "Generating elements for game '%s'", INFO, game);
+        }
+    }
+
+    private static void generate(String game) {
+        if (!ALL_GAMES.contains(game)) {
+            PrintUtils.printf("Game not found: '%s'", ERROR, game);
+            return;
+        }
+
+        for (String language : clients.split(",")) {
+            for (Locale locale : filter(locales, language)) {
+                new ElementGenerator(game, language, locale, localesFor(locales), base).generateToFile();
             }
         }
     }
 
-    private static boolean gamesSourcesPresent(String base) {
+    public static String makeAbsolute(String input) {
+        File path = new File(input);
+        if (path.isAbsolute()) {
+            return input;
+        }
+        return FilePathUtils.normalize(path.getAbsoluteFile().getPath());
+    }
+
+    public static String decodeAll(String list, List<String> all) {
+        return ALL.equalsIgnoreCase(list)
+                ? String.join(",", all)
+                : list;
+    }
+
+    public static void pleaseRunInAllProject() {
+        PrintUtils.printf("Please run this script on a fully cloned project c with submodules (with --recursive option)\n" +
+                        "    git clone --recursive https://github.com/codenjoyme/codenjoy.git",
+                ERROR,
+                base);
+    }
+
+    // для всех языков по умолчанию берется только первая локаль в списке,
+    // а для elements.md мы генерим для всех выбранных локалей
+    // TODO как-то это костыльно, подумать на досуге
+    private static List<Locale> filter(String localesString, String language) {
+        List<Locale> locales = localesFor(localesString);
+        if (language.equals("md")) {
+            return locales;
+        }
+
+        return Arrays.asList(locales.get(0));
+    }
+
+    public static List<Locale> localesFor(String codes) {
+        return Arrays.stream(codes.split(","))
+                .map(Locale::forLanguageTag)
+                .collect(toList());
+    }
+
+    public static boolean gamesSourcesPresent(String base) {
         File file = new File(base);
-        while (!file.getName().equals("CodingDojo")) {
+        while (!file.getName().equals(PROJECT_BASE_FOLDER)) {
             file = file.getParentFile();
             if (file == null) {
                 return false;
@@ -110,35 +147,18 @@ public class ElementGeneratorRunner {
         return file.exists();
     }
 
-    private static boolean isAllGames() {
-        return ALL_GAMES.equalsIgnoreCase(games);
-    }
-
-    private static void printInfo(String source) {
+    private static void printInfo(String source, PrintUtils.Color color) {
         PrintUtils.printf(
                 "Got from %s:\n" +
                 "\t 'GAMES':   '%s'\n" +
                 "\t 'CLIENTS': '%s'\n" +
-                "\t 'BASE':    '%s'\n",
-                INFO,
+                "\t 'LOCALES': '%s'\n" +
+                "\t 'BASE':    '%s'",
+                color,
                 source,
-                isAllGames() ? "all=" + allGames : games,
-                clients, base);
-    }
-
-    private static List<String> games() {
-        String packageName = "com.codenjoy.dojo.games";
-        return new Reflections(packageName).getSubTypesOf(CharElement.class).stream()
-                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
-                .filter(clazz -> !Modifier.isInterface(clazz.getModifiers()))
-                .filter(clazz -> Modifier.isPublic(clazz.getModifiers()))
-                .filter(clazz -> !clazz.toString().contains("test"))
-                .map(Class::getCanonicalName)
-                .map(name -> StringUtils.substringBetween(name,
-                        "com.codenjoy.dojo.games.", ".Element"))
-                .filter(Objects::nonNull)
-                .map(ElementGenerator::getCanonicalGame)
-                .sorted()
-                .collect(toList());
+                games,
+                clients,
+                locales,
+                base);
     }
 }

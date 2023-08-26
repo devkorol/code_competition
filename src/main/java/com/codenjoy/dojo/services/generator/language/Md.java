@@ -25,13 +25,12 @@ package com.codenjoy.dojo.services.generator.language;
 import com.codenjoy.dojo.services.generator.Template;
 
 import java.util.List;
+import java.util.Locale;
 
 public class Md implements Template {
 
-    public static final String SPRITE_SIZE = "40";
-
     @Override
-    public String header(List<String> locales) {
+    public String header(List<Locale> locales) {
         return "<meta charset=\"UTF-8\">\n" +
                 "\n" +
                 "## Symbol breakdown\n" +
@@ -40,18 +39,10 @@ public class Md implements Template {
     }
 
     @Override
-    public String line(boolean subrepo) {
-        if (subrepo) {
-            return "|<img src=\"https://github.com/codenjoyme/codenjoy-${game-canonical}/raw/master" +
-                    "/src/main/webapp/resources/${game}/sprite/${element-lower}.png\" " +
-                    "style=\"width:" + SPRITE_SIZE + "px;\" />" +
-                    " | `${element}('${char}')` | ${info} | \n";
-        }
-
-        return "|<img src=\"https://github.com/codenjoyme/codenjoy/raw/master" +
-                "/CodingDojo/games/${game-canonical}/src/main/webapp/resources" +
+    public String line() {
+        return "|<img src=\"/codenjoy-contest/resources" +
                 "/${game}/sprite/${element-lower}.png\" " +
-                "style=\"width:" + SPRITE_SIZE + "px;\" />" +
+                "style=\"height:auto;\" />" +
                 " | `${element}('${char}')` | ${info} | \n";
     }
 
@@ -67,6 +58,6 @@ public class Md implements Template {
 
     @Override
     public String file() {
-        return "../games/${game-canonical}/src/main/webapp/resources/${game}/help/elements.md";
+        return "../games/${game-canonical}/src/main/webapp/resources/${game}/help/${locale}/elements.md";
     }
 }

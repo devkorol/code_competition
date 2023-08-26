@@ -26,12 +26,15 @@ import com.codenjoy.dojo.services.generator.Template;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 public class Md_header implements Template {
 
     @Override
-    public String header(List<String> locales) {
+    public String header(List<Locale> locales) {
         return "<!--\n" +
                 "  ${tag}\n" +
                 "  Codenjoy - it's a dojo-like platform from developers to developers.\n" +
@@ -57,7 +60,7 @@ public class Md_header implements Template {
                 "    <head>\n" +
                 "        <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n" +
                 "        <title>${game-capitalize} codenjoy — как играть? | Игры на работе</title>\n" +
-                "        <base href=\".\" target=\"_self\">\n" +
+                "        <base href=\"\" target=\"_self\">\n" +
                 "        <link href=\"../../../resources/css/all.min.css\" media=\"all\" type=\"text/css\" rel=\"stylesheet\">\n" +
                 "        <link href=\"../../../resources/css/custom.css\" rel=\"stylesheet\">\n" +
                 "\n" +
@@ -74,7 +77,7 @@ public class Md_header implements Template {
                 "                       <header class=\"entry-header\">\n" +
                 "                           <h1 class=\"entry-title\">${game-capitalize} codenjoy — как играть?&nbsp;\n" +
             process(locales,
-                "                               <a href=\"../../../resources/${game}/help/index${lng}.html\">[${lng-upper}]</a>\n"
+                "                               <a href=\"/codenjoy-contest/manual/${game}/${lng}\">[${lng-upper}]</a>\n"
             ) +
                 "                           </h1>\n" +
                 "                       </header>\n" +
@@ -82,16 +85,17 @@ public class Md_header implements Template {
                 "                           <div class=\"page-restrict-output\">\n";
     }
 
-    private String process(List<String> locales, String template) {
+    private String process(List<Locale> locales, String template) {
         if (locales.size() == 1) {
             return StringUtils.EMPTY;
         }
             
         return locales.stream()
-                .map(lng -> template
-                        .replace("${lng}", "ru".equals(lng) ? StringUtils.EMPTY : ("-" + lng))
-                        .replace("${lng-upper}", lng.toUpperCase()))
-                .collect(Collectors.joining(""));
+                .map(Locale::getLanguage)
+                .map(language -> template
+                        .replace("${lng}", language)
+                        .replace("${lng-upper}", language.toUpperCase()))
+                .collect(joining(""));
     }
 
     @Override

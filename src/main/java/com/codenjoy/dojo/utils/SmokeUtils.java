@@ -30,8 +30,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static com.codenjoy.dojo.services.generator.ElementGenerator.getBase;
 
 public class SmokeUtils {
 
@@ -75,7 +78,8 @@ public class SmokeUtils {
     public static void assertSmokeFile(String fileName, List<String> messages) {
         String actual = String.join("\n", messages);
         String expected;
-        File expectedFile = new File(SOURCE_FOLDER + fileName);
+        String filePath = fileName.startsWith("src") ? fileName : SOURCE_FOLDER + fileName;
+        File expectedFile = new File(filePath);
         File actualFile = new File(TARGET_FOLDER + fileName);
         System.out.println("Expected data is here: " + expectedFile.getAbsolutePath());
         System.out.println("Actual data is here:   " + actualFile.getAbsolutePath());
@@ -91,6 +95,15 @@ public class SmokeUtils {
         if (recheck != null) {
             recheck.accept(actual);
         }
+    }
+
+    public static void assertSmokeEquals(String actual, Class owner, String methodName) {
+        SmokeUtils.assertSmokeFile(owner.getSimpleName()
+                        + "/" + methodName +  ".data",
+                Arrays.asList(actual
+                        .replace("\r\n", "\n")
+                        .replace(getBase(), "<BASE>")
+                        .split("\n")));
     }
 
     public static void saveToFile(File actualFile, String data) {
