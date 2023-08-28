@@ -60,7 +60,9 @@ public class YourSolver extends AbstractSolver {
     @Override
     public Command whatToDo(Board board) {
         try {
-            if (board.isGameOver() || board.isInLobby()) return doNothing();
+            if (board.isGameOver()
+//                || board.isInLobby()
+            ) return doNothing();
 
             if(lastTick > board.getTick()) {
                 greyGoo.reset();
@@ -71,6 +73,7 @@ public class YourSolver extends AbstractSolver {
         } catch (Exception e) {
             System.out.println("MAIN ERROR");
             e.printStackTrace();
+            System.out.println(board.getSource());
             return Command.doNothing();
         }
     }

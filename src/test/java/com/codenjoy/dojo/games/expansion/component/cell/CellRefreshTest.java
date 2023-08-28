@@ -3,6 +3,7 @@ package com.codenjoy.dojo.games.expansion.component.cell;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
+import com.codenjoy.dojo.games.expansion.Board;
 import com.codenjoy.dojo.games.expansion.Forces;
 import com.codenjoy.dojo.services.PointImpl;
 import org.junit.Before;
@@ -49,6 +50,11 @@ public class CellRefreshTest {
 
   @Before
   public void setup() {
-    a = new Cell(base) {};
+    a = new Cell(base) {
+      @Override
+      public void moveForces(Board board) {
+
+      }
+    };
   }
 }

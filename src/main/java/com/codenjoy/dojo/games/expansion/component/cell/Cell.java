@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
@@ -28,7 +29,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 @Getter
 public abstract class Cell {
 
-  protected final Set<Forces> cellForces = new HashSet<>(500);
+  protected Set<Forces> cellForces = new HashSet<>(500);
 
   protected final CircularFifoQueue<HashSet<Forces>> lostForcesHistory = new CircularFifoQueue(
       HISTORY_CELL_SIZE);
@@ -52,28 +53,57 @@ public abstract class Cell {
     return cellForces.contains(force);
   }
 
-  public Cell refreshPoints(List<Forces> myForces){
+  public Cell deduplicatePointsAfterMoves() {
+    Map<Forces, Integer> collect = cellForces.stream()
+        .collect(Collectors.toMap(
+            c -> c,
+            c -> 1,
+            (f1, f2) -> {
+              //TODO pass types, history etc
+              return f1;
+            }
+        ));
+    cellForces = new HashSet<>(collect.keySet());
+    return this;
+  }
+
+  public Cell refreshPoints(List<Forces> myForces) {
     HashSet<Forces> lostForces = new HashSet<>();
     lostForcesHistory.add(lostForces);
 
     Iterator<Forces> iterator = cellForces.iterator();
     while (iterator.hasNext()) {
       Forces cellForce = iterator.next();
+
       Optional<Forces> boardForce =
           myForces.stream()
               .filter(f -> f.equals(cellForce))
               .findFirst();
-
-      if(boardForce.isPresent()) {
+      if (boardForce.isPresent()) {
         cellForce
-            //TODO im sure to lost history???
+            //TODO im sure to lost history??? except sones
             .setType(AIMLESS)
             .setCount(boardForce.get().getCount());
-      } else {
+      } else if(cellForce.getMoveHistory() != null
+          && !cellForce.getMoveHistory().isEmpty()) {
+        //sooooooooo maybe i didnt move?
+        boardForce =
+            myForces.stream()
+                .filter(f -> f.getRegion().equals(cellForce.getMoveHistory().get(0)))
+                .findFirst();
+        if(boardForce.isPresent()) {
+          cellForce
+              //TODO im sure to lost history??? except sones
+              .setType(AIMLESS)
+              .setRegion(boardForce.get().getRegion())
+              .setCount(boardForce.get().getCount());
+        }
+
         lostForces.add(cellForce);
         iterator.remove();
       }
     }
+    System.out.println(String.format("REFRESH: %s", cellForces));
     return this;
   }
 
@@ -91,44 +121,48 @@ public abstract class Cell {
       for (QDirection direction : QDirection.getValues()) {
         Point lookPoint = cellForce.getRegion().copy().move(direction);
 
-        if(board.isOutOf(lookPoint)) {
+        if (board.isOutOf(lookPoint)) {
           continue;
         }
 
-        Forces lookForce = new Forces(lookPoint, 1);
+
+        Optional<Forces> anyMyForce = myForces.stream().filter(f -> f.getRegion().equals(lookPoint))
+            .findAny();
+        if (!anyMyForce.isPresent()) {
+          if (!board.isBarrierAt(lookPoint)) {
+            cellForce
+                .setType(MEMBRANE)
+                .getNearPoints().put(direction, lookPoint);
+          }
+
+          continue;
+        }
+
+        Forces lookForce = anyMyForce.get();
         if (cellForces.contains(lookForce)) {
           continue;
         }
 
-        //not mine forces so add?
-        if(!board.isBarrierAt(lookPoint)) {
-          cellForce
-              .setType(MEMBRANE)
-              .getNearPoints().put(direction, lookPoint);
-        }
-
-        //TODO maybe delete it
-        Optional<Cell> intersectedCell = other.stream().filter(c -> c.isKnown(lookForce)).findFirst();
-        if(intersectedCell.isPresent()) {
+        Optional<Cell> intersectedCell = other.stream().filter(c -> c.isKnown(lookForce))
+            .findFirst();
+        if (intersectedCell.isPresent()) {
           Integer cellIntersections = cellSameForcesCount.getOrDefault(intersectedCell.get(), 0);
           cellSameForcesCount.put(intersectedCell.get(), ++cellIntersections);
 
           continue;
         }
+//        System.out.println(String.format("match %s - %s", lookForce, anyMyForce.get()));
 
-        Optional<Forces> anyMyForce = myForces.stream().filter(f -> f.getRegion().equals(lookPoint)).findAny();
-        if (anyMyForce.isPresent()) {
-          lookForce.setCount(anyMyForce.get().getCount());
-
-          newForces.add(lookForce);
-          cellForces.add(lookForce);
-          queue.add(lookForce);
-        }
+        newForces.add(lookForce);
+        cellForces.add(lookForce);
+        queue.add(lookForce);
       }
     }
 
+    System.out.println(String.format("EXPAND: %s", cellForces));
     return this;
   }
 
 
+  public abstract void moveForces(Board board);
 }

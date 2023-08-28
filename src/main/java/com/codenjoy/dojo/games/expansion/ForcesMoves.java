@@ -23,10 +23,12 @@ package com.codenjoy.dojo.games.expansion;
  */
 
 
-import com.codenjoy.dojo.services.QDirection;
 import com.codenjoy.dojo.services.Point;
+import com.codenjoy.dojo.services.QDirection;
+import lombok.ToString;
 import org.json.JSONObject;
 
+@ToString(callSuper = true)
 public class ForcesMoves extends Forces {
 
     private QDirection direction;
@@ -49,6 +51,9 @@ public class ForcesMoves extends Forces {
         return direction.toString();
     }
 
+    public QDirection getDirectionEnum() {
+        return direction;
+    }
     public Point getDestination(Point from) {
         if (direction == QDirection.NONE) {
             return from;

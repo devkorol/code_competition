@@ -79,7 +79,12 @@ public class CellExpandTest {
   private static Cell getCell(Forces forces) {
     return new Cell(
         forces
-    ){};
+    ){
+      @Override
+      public void moveForces(Board board) {
+
+      }
+    };
   }
 
   @Test

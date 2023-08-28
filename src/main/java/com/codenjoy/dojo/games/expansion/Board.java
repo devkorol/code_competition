@@ -126,6 +126,10 @@ public class Board extends AbstractBoard<Element> {
         return source.getBoolean("inLobby");
     }
 
+    public int getIncrease() {
+        return source.getInt("available");
+    }
+
     /*
      * @return pt.x - current round tick, pt.y - total ticks per round
      */
@@ -402,5 +406,9 @@ public class Board extends AbstractBoard<Element> {
 
     public boolean isBarrierAt(Point p) {
         return isBarrierAt(p.getX(), p.getY());
+    }
+
+    public JSONObject getSource() {
+        return source;
     }
 }

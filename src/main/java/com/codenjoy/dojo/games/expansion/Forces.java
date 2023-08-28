@@ -33,19 +33,16 @@ import com.codenjoy.dojo.services.QDirection;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.json.JSONObject;
+import org.json.JSONPropertyIgnore;
 
 @Setter
-@Getter
 @Accessors(chain = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Forces {
-
-
     private int count;
     @EqualsAndHashCode.Include
     private Point region;
@@ -55,6 +52,8 @@ public class Forces {
     private final CircularFifoQueue<Point> moveHistory = new CircularFifoQueue(HISTORY_FORCE_MOVE_SIZE);
 
     private Map<QDirection, Point> nearPoints = new HashMap<>(10);
+
+    private ForcesMoves forcesMoves;
 
     public Forces(Point region, int count) {
         this.region = new PointImpl(region);
@@ -73,7 +72,51 @@ public class Forces {
 
     @Override
     public String toString() {
-        return String.format("[%s,%s]=%s", region.getX(), region.getY(), count);
+        return String.format("[%s,%s]=%s %s", region.getX(), region.getY(), count, type);
+    }
+
+    public Point getRegion() {
+        return region;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    @JSONPropertyIgnore
+    public ForceType getType() {
+        return type;
+    }
+
+    @JSONPropertyIgnore
+    public CircularFifoQueue<Point> getMoveHistory() {
+        return moveHistory;
+    }
+
+    @JSONPropertyIgnore
+    public Map<QDirection, Point> getNearPoints() {
+        return nearPoints;
+    }
+
+    @JSONPropertyIgnore
+    public ForcesMoves getForcesMoves() {
+        return forcesMoves;
+    }
+
+    public void move(QDirection direction, int i) {
+        forcesMoves = new ForcesMoves(region.copy(), i, direction);
+    }
+
+    public ForcesMoves getAndDumpMove() {
+        if(forcesMoves == null) {
+            return null;
+        }
+        moveHistory.add(forcesMoves.getRegion().copy().move(forcesMoves.getDirectionEnum()));
+        region = region.move(forcesMoves.getDirectionEnum());
+
+        ForcesMoves tmp = forcesMoves;
+        forcesMoves = null;
+        return tmp;
     }
 
     public static enum ForceType {

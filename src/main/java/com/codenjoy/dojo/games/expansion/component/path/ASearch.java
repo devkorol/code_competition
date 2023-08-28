@@ -3,7 +3,9 @@ package com.codenjoy.dojo.games.expansion.component.path;
 import com.codenjoy.dojo.games.expansion.Board;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.QDirection;
+import java.util.HashSet;
 import java.util.TreeSet;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -14,23 +16,32 @@ public class ASearch {
   public static Node path(Point source, Point target, Board board) {
     TreeSet<Node> path = new TreeSet<>();
     Node start = new Node(null, source,0, distance(source, target), null);
-    Node node = buildPath(target, start, path, board);
+    Node node = buildPath(target, start, path, new HashSet<>(1000), board);
 
+    int step = 0;
     do {
       Node prev = node.getPrev();
       prev.next = node;
+      node.steps = ++step;
       node = prev;
     } while (node.getPrev() != null);
 
+    node.steps = ++step;
     return node;
   }
 
-  private static Node buildPath(Point target, Node prev, TreeSet<Node> path, Board board) {
-    for (QDirection direction : QDirection.values()) {
+  private static Node buildPath(Point target, Node prev, TreeSet<Node> path, HashSet<Node> processed, Board board) {
+    processed.add(prev);
+
+    for (QDirection direction : QDirection.getValues()) {
       Point newPoint = prev.getPoint().copy().move(direction);
 
       if(board.isOutOf(newPoint)
         || board.isBarrierAt(newPoint)) {
+        continue;
+      }
+
+      if(iWasHere(prev, newPoint)){
         continue;
       }
 
@@ -44,12 +55,26 @@ public class ASearch {
       if(target.equals(current.getPoint())) {
         return current;
       }
-      path.add(current);
+
+      if(!processed.contains(current)) {
+        path.add(current);
+      }
     }
 
     Node first = path.first();
     path.remove(first);
-    return buildPath(target, first, path, board);
+    return buildPath(target, first, path, processed, board);
+  }
+
+  private static boolean iWasHere(Node node, Point newPoint) {
+    do {
+      if(node.getPoint().equals(newPoint)) {
+        return true;
+      }
+      node = node.getPrev();
+    } while (node != null && node.getPrev() != null);
+
+    return false;
   }
 
   protected static double distance(Point p1, Point p2) {
@@ -62,13 +87,16 @@ public class ASearch {
 
   @Getter
   @ToString
+  @EqualsAndHashCode(onlyExplicitlyIncluded = true)
   public static class Node implements Comparable<Node>{
 
+    @EqualsAndHashCode.Include
     private Point point;
     private int cost;
     private double distance;
     private double weight; //the lower the better
     private QDirection direction;
+    private int steps;
     @ToString.Exclude
     private Node prev;
     private Node next;

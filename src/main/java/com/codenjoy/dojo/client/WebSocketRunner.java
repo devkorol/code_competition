@@ -23,13 +23,10 @@ package com.codenjoy.dojo.client;
  */
 
 
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.api.*;
-import org.eclipse.jetty.websocket.api.annotations.*;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
+import static com.codenjoy.dojo.games.expansion.component.GreyGoo.IS_LOG_PRINT_ANSWER;
+import static com.codenjoy.dojo.games.expansion.component.GreyGoo.IS_LOG_PRINT_BOARD;
 
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +34,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.StatusCode;
+import org.eclipse.jetty.websocket.api.UpgradeException;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 public class WebSocketRunner implements Closeable {
 
@@ -210,6 +218,7 @@ public class WebSocketRunner implements Closeable {
                 print("Connection error: Unauthorized access. Please register user and/or write valid EMAIL/CODE in the client.");
             } else {
                 print("Error with message: '" + reason.toString());
+                reason.printStackTrace();
             }
         }
 
@@ -222,11 +231,14 @@ public class WebSocketRunner implements Closeable {
                 }
 
                 board.forString(matcher.group(1));
-                print("Board: \n" + board);
+                if(IS_LOG_PRINT_BOARD) {
+                    print("Board: \n" + board);
+                }
 
                 String answer = solver.get(board);
-                print("Answer: " + answer);
-
+                if(IS_LOG_PRINT_ANSWER) {
+                    print("Answer: " + answer);
+                }
                 RemoteEndpoint remote = session.getRemote();
                 if (remote == null) { // TODO to understand why this can happen?
                     WebSocketRunner.this.tryToConnect();

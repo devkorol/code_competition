@@ -88,7 +88,12 @@ public class GreyGooCellTest {
   public void existCellTest() {
     ai.cells.add(
         new Cell(
-            new Forces(new PointImpl(1, 5), 1)){});
+            new Forces(new PointImpl(1, 5), 1)){
+          @Override
+          public void moveForces(Board board) {
+
+          }
+        });
     Command process = ai.process(board(
         "{'myBase':{'x':1,'y':5}," +
             "'myColor':0, 'available':10, 'inLobby':false, 'round':1, 'rounds':10, 'tick':10," +
