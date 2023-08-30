@@ -22,40 +22,40 @@ package com.codenjoy.dojo.games.expansion.component.cell;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-
 import com.codenjoy.dojo.games.expansion.Board;
+import com.codenjoy.dojo.games.expansion.Element;
 import com.codenjoy.dojo.games.expansion.Forces;
-import com.codenjoy.dojo.services.PointImpl;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.List;
+import java.util.Optional;
 
-public class CellDeduplicateTest {
+public abstract class CellWithMembraneAndCore extends CellWithMembrane {
 
-  private Forces base = new Forces(new PointImpl(1,5), 1);
+  protected Forces core;
+  protected List<Element> coreTypes;
 
-  @Test
-  public void refreshCountTest() {
-    Forces f = new Forces(new PointImpl(1, 6), 1);
-    a.getCellForces().add(
-        f
-    );
-    f.getRegion().move(base.getRegion());
-    a.deduplicatePointsAfterMoves();
-
-    System.out.println(a.getCellForces());
-    assertEquals(1, a.getCellForces().size());
+  public CellWithMembraneAndCore(Forces core, List<Element> coreTypes) {
+    super(core);
+    this.core = core;
+    this.coreTypes = coreTypes;
   }
 
-  private Cell a;
-
-  @Before
-  public void setup() {
-    a = new Cell(base) {
-      @Override
-      public void moveForces(Board board) {
-
-      }
-    };
+  protected void updateCore(Board board) {
+    if(!containsCore()) {
+      reinitCore(board);
+    }
   }
+
+  protected boolean containsCore() {
+    return cellForces.contains(core);
+  }
+
+  private void reinitCore(Board board) {
+    Optional<Forces> force = cellForces.stream()
+        .filter(f -> coreTypes.contains(board.getAt(f.getRegion())))
+        .findFirst();
+    if(force.isPresent()) {
+      core = force.get();
+    }
+  }
+
 }

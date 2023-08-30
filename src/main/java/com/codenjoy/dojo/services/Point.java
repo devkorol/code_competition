@@ -135,7 +135,7 @@ public interface Point extends Comparable<Point> {
      * @return Direction from current position to given point.
      * Returns Null if points are not neighbours.
      */
-    Direction direction(Point to);
+    QDirection direction(Point to);
 
     void onChange(BiConsumer<Point, Point> onChange);
 

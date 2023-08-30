@@ -1,4 +1,4 @@
-package com.codenjoy.dojo.games.expansion.component.cell.part;
+package com.codenjoy.dojo.games.expansion.component.cell;
 
 /*-
  * #%L
@@ -22,8 +22,22 @@ package com.codenjoy.dojo.games.expansion.component.cell.part;
  * #L%
  */
 
-public class Wandering {
+import com.codenjoy.dojo.games.expansion.Forces;
+import com.codenjoy.dojo.games.expansion.Forces.ForceType;
+import java.util.List;
+import java.util.stream.Collectors;
 
-  //not cores or membrane with more than 1 force
+public abstract class CellWithMembrane extends CellMovable {
 
+  protected List<Forces> membraneForces;
+
+  public CellWithMembrane(Forces core) {
+    super(core);
+  }
+
+  protected void collectMembraneCells() {
+    membraneForces = cellForces.stream()
+        .filter(c -> c.getType() == ForceType.MEMBRANE)
+        .collect(Collectors.toList());
+  }
 }

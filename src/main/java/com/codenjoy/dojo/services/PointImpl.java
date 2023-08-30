@@ -215,8 +215,8 @@ public class PointImpl implements Point, Comparable<Point> {
     }
 
     @Override
-    public Direction direction(Point to) {
-        return Direction.getValues().stream()
+    public QDirection direction(Point to) {
+        return QDirection.getValues().stream()
                 .filter(direction -> direction.change(this).itsMe(to))
                 .findFirst()
                 .orElse(null);

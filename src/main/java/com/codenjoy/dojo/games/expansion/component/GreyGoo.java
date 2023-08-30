@@ -1,5 +1,27 @@
 package com.codenjoy.dojo.games.expansion.component;
 
+/*-
+ * #%L
+ * Codenjoy - it's a dojo-like platform from developers to developers.
+ * %%
+ * Copyright (C) 2012 - 2023 Codenjoy
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 
 import static com.codenjoy.dojo.games.expansion.Command.doNothing;
 
@@ -8,7 +30,7 @@ import com.codenjoy.dojo.games.expansion.Command;
 import com.codenjoy.dojo.games.expansion.Forces;
 import com.codenjoy.dojo.games.expansion.ForcesMoves;
 import com.codenjoy.dojo.games.expansion.component.cell.Cell;
-import com.codenjoy.dojo.games.expansion.component.cell.FarmerCell;
+import com.codenjoy.dojo.games.expansion.component.cell.ScoutCell;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,10 +47,8 @@ public class GreyGoo {
   public static final int HISTORY_CELL_SIZE = 3;
   public static final int HISTORY_FORCE_MOVE_SIZE = 3;
 
-  public static final int PATH_TO_MEMBRANE_MAX_VARIATIONS = 5;
-  public static final int PATH_TO_MEMBRANE_MAX_TOLERANCE = 1;
-  public static final int PATH_TO_GOLD_MAX_VARIATIONS = 50;
-  public static final int PATH_TO_GOLD_MAX_TOLERANCE = 1;
+  public static final int PATH_TO_MAX_VARIATIONS = 50;
+  public static final int PATH_TO_MAX_TOLERANCE = 10;
 
   protected List<Cell> cells = new ArrayList<>();
 
@@ -73,7 +93,7 @@ public class GreyGoo {
     //only at round start
     //TODO add logic for cell type
     if(cells.isEmpty()) {
-      cells.add(new FarmerCell(myForces.get(0)));
+      cells.add(new ScoutCell(myForces.get(0)));
     }
   }
 
@@ -81,7 +101,7 @@ public class GreyGoo {
     for (Forces myForce : myForces) {
       if(cells.stream().noneMatch(c -> c.isKnown(myForce))) {
         //TODO add logic for cell type
-        Cell cell = new FarmerCell(myForce);
+        Cell cell = new ScoutCell(myForce);
         refreshCell(board, myForces, cell);
         cells.add(cell);
       }

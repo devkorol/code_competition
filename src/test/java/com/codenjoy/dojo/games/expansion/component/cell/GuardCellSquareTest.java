@@ -1,4 +1,4 @@
-package com.codenjoy.dojo.games.expansion.component.cell.part;
+package com.codenjoy.dojo.games.expansion.component.cell;
 
 /*-
  * #%L
@@ -22,8 +22,8 @@ package com.codenjoy.dojo.games.expansion.component.cell.part;
  * #L%
  */
 
-public class Wandering {
+import junit.framework.TestCase;
 
-  //not cores or membrane with more than 1 force
+public class GuardCellSquareTest extends TestCase {
 
 }
