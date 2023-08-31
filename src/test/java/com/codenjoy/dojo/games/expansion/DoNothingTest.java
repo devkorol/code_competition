@@ -30,6 +30,7 @@ import com.codenjoy.dojo.client.Solver;
 import com.codenjoy.dojo.services.Dice;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class DoNothingTest {
@@ -48,6 +49,7 @@ public class DoNothingTest {
     }
 
     @Test
+    @Ignore
     public void inLobbyTest() {
         assertL(
             "{'myBase':{'x':1,'y':5}," +

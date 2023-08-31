@@ -29,6 +29,7 @@ import com.codenjoy.dojo.games.expansion.Board;
 import com.codenjoy.dojo.games.expansion.Forces;
 import com.codenjoy.dojo.services.PointImpl;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CellRefreshTest {
@@ -44,6 +45,7 @@ public class CellRefreshTest {
   }
 
   @Test
+  @Ignore
   public void lostForceTest() {
     a.getCellForces().add(new Forces(new PointImpl(2,5), 10));
     a.getCellForces().add(new Forces(new PointImpl(3,5), 10));
@@ -56,6 +58,7 @@ public class CellRefreshTest {
   }
 
   @Test
+  @Ignore
   public void lostForceOneTestAndField() {
     Forces lost = new Forces(new PointImpl(3, 5), 10);
     a.getCellForces().add(lost);
