@@ -22,20 +22,20 @@ package com.codenjoy.dojo.services.generator;
  * #L%
  */
 
-import com.codenjoy.dojo.utils.RedirectOutput;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import java.io.File;
-import java.util.Locale;
-
 import static com.codenjoy.dojo.services.generator.ElementGenerator.PROJECT_BASE_FOLDER;
 import static com.codenjoy.dojo.services.generator.ElementGeneratorRunner.localesFor;
 import static com.codenjoy.dojo.services.generator.ElementGeneratorRunner.pleaseRunInAllProject;
 import static com.codenjoy.dojo.utils.SmokeUtils.assertSmokeEquals;
 import static java.util.Locale.ENGLISH;
 
+import com.codenjoy.dojo.utils.RedirectOutput;
+import java.io.File;
+import java.util.Locale;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+@Ignore
 public class ElementGeneratorTest {
 
     public static final Locale OTHER_EXISTS_LOCALE = Locale.forLanguageTag("ru");

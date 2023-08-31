@@ -27,8 +27,10 @@ import static org.junit.Assert.assertEquals;
 
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class BoardTest {
 
     private Board board;

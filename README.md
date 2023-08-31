@@ -17,6 +17,7 @@ Game parameters passed by arguments at startup have a higher priority than those
 
 The archive is run with the command `java -jar target/client-exec.jar [<game>] [<url>]`
 
+
 # How does it work?
 The elements on the map are defined in `com.codenjoy.dojo.games.<gamename>.Element`. They determine the meaning of a particular symbol.
 The two important components of the game are the `com.codenjoy.dojo.games.<gamename>.Board` game board 
